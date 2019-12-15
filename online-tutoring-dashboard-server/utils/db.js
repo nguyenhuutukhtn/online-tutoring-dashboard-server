@@ -7,7 +7,7 @@ var createConnection = () => {
         user: 'rq7eaLGaB7',
         password: 'M6M5r3E0tU',
         database: 'rq7eaLGaB7',
-        insecureAuth: true
+        insecureAuth: true,
     });
 }
 
@@ -16,7 +16,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             var connection = createConnection();
             connection.connect();
-            connection.query(sql, (error, results, fields) => {
+            connection.query(sql, (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
