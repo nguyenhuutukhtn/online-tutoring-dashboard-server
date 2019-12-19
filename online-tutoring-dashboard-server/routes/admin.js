@@ -7,16 +7,15 @@ var complainModel = require('../model/complain.model');
 var moment = require('moment');
 const passport = require('passport');
 const passportJWT = require("passport-jwt");
-const ExtractJWT = passportJWT.ExtractJwt;
-const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const LIMIT = 10;
 
-router.post('/loginFB', function (req, res) {
-    passport.authenticate('user-facebook', { session: false }, (err, user) => {
+/* POST login. */
+router.post('/login', function (req, res) {
+    passport.authenticate('user-local', { session: false }, (err, user, info) => {
       if (err || !user) {
         return res.status(400).json({
-          message: 'Something is not right',
-          user: user,
+          message: info.message,
         });
       }
       req.login(user, { session: false }, (err) => {
@@ -25,7 +24,7 @@ router.post('/loginFB', function (req, res) {
         }
         //generate a signed son web token with the contents of user object and return it in the response
         const token = jwt.sign({ name: user[0].name, userId: user[0].id, role: user[0].role }, 'your_jwt_secret');
-        return res.json({ name: user[0].name, userId: user[0].id, role: user[0].role, token });
+        return res.json({ name: user[0].name, userId: user[0].id, token });
       });
     })(req, res);
   });

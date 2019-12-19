@@ -12,4 +12,7 @@ module.exports = {
     update: entity => {
         db.update('user', 'id', entity);
     },
+    getbyUsername: username => {
+        return db.load(`select * from admin where username='${username}'`)
+    },
 };
