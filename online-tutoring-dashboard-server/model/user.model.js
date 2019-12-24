@@ -15,4 +15,7 @@ module.exports = {
     getbyUsername: username => {
         return db.load(`select * from admin where username='${username}'`)
     },
+    countTotalPage: () => {
+        return db.load(`select COUNT(*) as total from user`)
+    },
 };

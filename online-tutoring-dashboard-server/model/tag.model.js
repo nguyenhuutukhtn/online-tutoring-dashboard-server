@@ -3,8 +3,8 @@ module.exports = {
     add: entity => {
         return db.add('tagskill', entity);
     },
-    list: () => {
-        return db.load('select * from tagskill');
+    list: (offset, LIMIT) => {
+        return db.load(`select * from tagskill limit ${LIMIT} offset ${offset} `);
     },
     singleById: (id) => {
         return db.load(`select * from tagskill where id='${id}'`);
@@ -14,5 +14,8 @@ module.exports = {
     },
     delete: id => {
         db.delete('tagskill', 'id', id);
+    },
+    countTotalPage: () => {
+        return db.load(`select COUNT(*) as total from tagskill`)
     },
 };

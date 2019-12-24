@@ -33,13 +33,13 @@ router.get('/listallUser', async function (req, res) {
     try {
         let page = req.query.page - 1;
         if (!req.query.page || parseInt(req.query.page) === 0) {
-            console.log('hahahah');
             page = 0;
         }
         const offset = page * LIMIT;
         const listUser = await userModel.list(offset, LIMIT);
-        console.log('listUser-----', listUser);
-        res.status(200).json({ data: listUser });
+        const count = await userModel.countTotalPage();
+        const totalPage = Math.ceil(count[0].total/LIMIT);
+        res.status(200).json({ data: listUser, totalPage });
     } catch (err) {
         res.status(400).json({ error: err });
     }
@@ -60,9 +60,15 @@ router.get('/infoUser', async function (req, res) {
 
 router.get('/listAllTag', async function (req, res) {
     try {
-        const listTag = await tagModel.list();
-        console.log('listTag--------', listTag);
-        res.status(200).json({ data: listTag });
+        let page = req.query.page - 1;
+        if (!req.query.page || parseInt(req.query.page) === 0) {
+            page = 0;
+        }
+        const offset = page * LIMIT;
+        const listTag = await tagModel.list(offset,LIMIT);
+        const count = await tagModel.countTotalPage();
+        const totalPage = Math.ceil(count[0].total/LIMIT);
+        res.status(200).json({ data: listTag, totalPage });
     } catch (err) {
         res.status(400).json({ error: err });
     }
