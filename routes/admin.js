@@ -4,6 +4,7 @@ var userModel = require('../model/user.model');
 var tagModel = require('../model/tag.model');
 var policyModel = require('../model/policy.model');
 var complainModel = require('../model/complain.model');
+var messageModel = require('../model/Message');
 var moment = require('moment');
 const passport = require('passport');
 const passportJWT = require("passport-jwt");
@@ -215,19 +216,54 @@ router.get('/listAllComplain', async function (req, res) {
     }
 });
 
-router.get('/solveComplain', async function (req, res) {
+router.get('/getDetailComplain', async function (req, res) {
     try {
-        const complainId = req.query.id;
-        const newStatus = req.query.status;
-        if (!newStatus || newStatus !== 'solved' || newStatus !== 'unsolved') {
+        let idComplain = req.query.id;
+        if (!idComplain) {
+            res.status(400).json({ err: 'invalid Id' });
+        }
+        const complain = await complainModel.singleById(idComplain);
+        const policyData = await policyModel.findPolicyByPolicyId(complain[0].id_policy);
+        const allMessage = await messageModel.getAllMessageById(policyData[0].id_student, policyData[0].id_teacher);
+        complain[0].policyData = policyData;
+        complain[0].allMessage = allMessage;
+        res.status(200).json({data: complain});
+    } catch (error) {
+        res.status(400).json({ err: error });
+    }
+})
+
+router.post('/solveComplain', async function (req, res) {
+    try {
+        const complainId = req.body.id;
+        const newStatus = req.body.newStatus;
+        if (!newStatus || newStatus !== 'solved' && newStatus !== 'unsolved') {
             return res.status(400).json({ error: 'status not correct' });
         }
-        const complain = complainModel.singleById(complainId);
+        const complain = await complainModel.singleById(complainId);
         if (!complain[0]) {
             return res.status(400).json({ error: 'can not find complain' });
         }
         complain[0].status = newStatus;
         complainModel.update(complain[0]);
+        const policy = await policyModel.singleById(req.body.idPolicy);
+        const policyUpdate = policy[0];
+        if (req.body.action === 'complete') {
+            policyUpdate.status = 'complete';
+            const tutor = await userModel.singleById(req.body.idTutor);
+            const tutorUpdate = tutor[0];
+            tutorUpdate.balance += policyUpdate.price;
+            userModel.update(tutorUpdate);
+        }
+        else {
+            policyUpdate.status = 'cancel';
+            const student = await userModel.singleById(req.body.idStudent);
+            const studentUpdate = student[0];
+            studentUpdate.balance += policyUpdate.price;
+            userModel.update(studentUpdate);
+
+        }
+        policyModel.update(policyUpdate);
         res.status(200).json({ message: 'Solved complain success' });
     } catch (err) {
         console.log('err', err);
