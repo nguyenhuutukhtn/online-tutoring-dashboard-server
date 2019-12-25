@@ -274,10 +274,10 @@ router.post('/solveComplain', async function (req, res) {
 router.get('/getAllProfit', async function (req, res) {
     try {
         const listPolicy = await policyModel.getByStatus('complete');
-        console.log('listPolicy------', listPolicy);
-        const staticBy = req.query.staticBy;
-        const dayCompare = req.query.dayCompare;
-        let total = 0;
+
+        const totalByDay = Array(32).fill(0);
+        const totalByMonth = Array(13).fill(0);
+        const totalByYear = Array(11).fill(0);
         listPolicy.forEach(element => {
             console.log('element.complete_day-----', element.complete_date);
             if (!element.complete_date) {
@@ -287,16 +287,20 @@ router.get('/getAllProfit', async function (req, res) {
             console.log('dayFormat----', dayFormat);
             const dayArray = dayFormat.split('/');
             console.log('dayArray--------', dayArray);
-
-            if (staticBy === 'day' && parseInt(dayCompare) === parseInt(dayArray[0])) {
-                total += element.price;
-            } else if (staticBy === 'month' && parseInt(dayCompare) === parseInt(dayArray[1])) {
-                total += element.price;
-            } else if (staticBy === 'year' && parseInt(dayCompare) === parseInt(dayArray[2])) {
-                total += element.price;
-            }
+            totalByDay[parseInt(dayArray[0]) - 1] += element.price*1000;
+            totalByMonth[parseInt(dayArray[1]) - 1] += element.price*1000;
+            let year = parseInt(dayArray[2]);
+            year = year%2010 - 1;
+            totalByYear[year] += element.price*1000;
+            // if (staticBy === 'day' && parseInt(dayCompare) === parseInt(dayArray[0])) {
+            //     total += element.price;
+            // } else if (staticBy === 'month' && parseInt(dayCompare) === parseInt(dayArray[1])) {
+            //     total += element.price;
+            // } else if (staticBy === 'year' && parseInt(dayCompare) === parseInt(dayArray[2])) {
+            //     total += element.price;
+            // }
         });
-        res.status(200).json({ data: total });
+        res.status(200).json({ totalByDay, totalByMonth, totalByYear });
     } catch (err) {
         console.log('err-----', err);
         res.status(400).json({ error: err });
