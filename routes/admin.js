@@ -177,7 +177,9 @@ router.get('/listAllComplain', async function (req, res) {
         }
         const offset = page * LIMIT;
         const listComplain = await complainModel.list(offset, LIMIT);
-        res.status(200).json({ data: listComplain });
+        const count = await complainModel.countTotalPage();
+        const totalPage = Math.ceil(count[0].total/LIMIT);
+        res.status(200).json({ data: listComplain, totalPage });
     } catch (err) {
         res.status(400).json({ err: err });
     }
