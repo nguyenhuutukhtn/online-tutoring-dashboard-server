@@ -47,4 +47,7 @@ module.exports = {
         where P.id = ${id}`;
         return db.load(sql);
     },
+    groupByTutor: (status) => {
+        return db.load(`select sum(price) as total, id_teacher, user.name, user.avatar from policy inner join user on policy.id_teacher=user.id and policy.status='${status}' group by id_teacher order by total DESC`)
+    },
 };

@@ -271,7 +271,7 @@ router.post('/solveComplain', passport.authenticate('jwt', { session: false }), 
     }
 });
 
-router.get('/getAllProfit', async function (req, res) {
+router.get('/getAllProfit', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const listPolicy = await policyModel.getByStatus('complete');
 
@@ -300,6 +300,7 @@ router.get('/getAllProfit', async function (req, res) {
             //     total += element.price;
             // }
         });
+
         res.status(200).json({ totalByDay, totalByMonth, totalByYear });
     } catch (err) {
         console.log('err-----', err);
@@ -307,33 +308,24 @@ router.get('/getAllProfit', async function (req, res) {
     }
 });
 
-router.get('/getTopProfitByTutor', async function (req, res) {
+router.get('/getTopProfitByTutor', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
-        const idTutor = req.query.idTutor;
-        const listPolicy = await policyModel.getByTutor(idTutor);
-        console.log('listPolicy---------', listPolicy);
-        const staticBy = req.query.staticBy;
-        const dayCompare = req.query.dayCompare;
-        let total = 0;
-        listPolicy.forEach(element => {
-            console.log('element.complete_day-----', element.complete_date);
-            if (!element.complete_date) {
-                return;
-            }
-            const dayFormat = moment(element.complete_date).format('DD/MM/YYYY');
-            console.log('dayFormat----', dayFormat);
-            const dayArray = dayFormat.split('/');
-            console.log('dayArray--------', dayArray);
 
-            if (staticBy === 'day' && parseInt(dayCompare) === parseInt(dayArray[0])) {
-                total += element.price;
-            } else if (staticBy === 'month' && parseInt(dayCompare) === parseInt(dayArray[1])) {
-                total += element.price;
-            } else if (staticBy === 'year' && parseInt(dayCompare) === parseInt(dayArray[2])) {
-                total += element.price;
-            }
-        });
-        res.status(200).json({ data: total });
+        const listPolicy = await policyModel.groupByTutor('complete');
+        console.log('listPolicy---------', listPolicy);
+        // listPolicy.forEach(element => {
+        //     console.log('element.complete_day-----', element.complete_date);
+        //     if (!element.complete_date) {
+        //         return;
+        //     }
+        //     const dayFormat = moment(element.complete_date).format('DD/MM/YYYY');
+        //     console.log('dayFormat----', dayFormat);
+        //     const dayArray = dayFormat.split('/');
+        //     console.log('dayArray--------', dayArray);
+
+
+        // });
+        res.status(200).json({ listTutor: listPolicy });
     } catch (err) {
         console.log('err-----', err);
         res.status(400).json({ error: err });
