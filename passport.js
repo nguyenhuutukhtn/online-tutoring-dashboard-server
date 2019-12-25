@@ -18,7 +18,7 @@ passport.use('user-local', new LocalStrategy({
             .then(user => {
                 console.log('user---', user);
                 if (user.length === 0) {
-                    return cb(null, false, { message: 'Incorrect email.' });
+                    return cb(null, false, { message: 'Incorrect username.' });
                 }
                 let ret = bcrypt.compareSync(password, user[0].password);
 
@@ -33,7 +33,7 @@ passport.use('user-local', new LocalStrategy({
 
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'your_jwt_secret'
+    secretOrKey: 'your_jwt_secret',
 },
     function (jwtPayload, cb) {
         //find the user in db if needed. This functionality may be omitted if you store everything you'll need in JWT payload.

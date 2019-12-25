@@ -30,7 +30,7 @@ router.post('/login', function (req, res) {
     })(req, res);
 });
 
-router.get('/listallUser', async function (req, res) {
+router.get('/listallUser', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         let page = req.query.page - 1;
         if (!req.query.page || parseInt(req.query.page) === 0) {
@@ -47,7 +47,7 @@ router.get('/listallUser', async function (req, res) {
 
 });
 
-router.get('/infoUser', async function (req, res) {
+router.get('/infoUser', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const idUser = req.query.id;
         const userData = await userModel.singleById(idUser);
@@ -59,7 +59,7 @@ router.get('/infoUser', async function (req, res) {
 
 });
 
-router.get('/listAllTag', async function (req, res) {
+router.get('/listAllTag', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         let page = req.query.page - 1;
         if (!req.query.page || parseInt(req.query.page) === 0) {
@@ -76,7 +76,7 @@ router.get('/listAllTag', async function (req, res) {
 
 });
 
-router.post('/updateTag', async function (req, res) {
+router.post('/updateTag', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         console.log('req.body.id: ------', req.body.id);
         const tagData = await tagModel.singleById(req.body.id);
@@ -91,7 +91,7 @@ router.post('/updateTag', async function (req, res) {
 
 });
 
-router.post('/addNewTag', async function (req, res) {
+router.post('/addNewTag', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const newTag = {
             name: req.body.name,
@@ -104,7 +104,7 @@ router.post('/addNewTag', async function (req, res) {
 
 });
 
-router.post('/deleteTag', async function (req, res) {
+router.post('/deleteTag', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         await tagModel.delete(req.body.id);
         res.send('deleteTag');
@@ -115,7 +115,7 @@ router.post('/deleteTag', async function (req, res) {
 
 });
 
-router.get('/lockUser', async function (req, res) {
+router.get('/lockUser', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const idUser = req.query.id;
         const userData = await userModel.singleById(idUser);
@@ -128,7 +128,7 @@ router.get('/lockUser', async function (req, res) {
     }
 });
 
-router.get('/unlockUser', async function (req, res) {
+router.get('/unlockUser', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const idUser = req.query.id;
         const userData = await userModel.singleById(idUser);
@@ -141,7 +141,7 @@ router.get('/unlockUser', async function (req, res) {
     }
 });
 
-router.get('/listAllPolicy', async function (req, res) {
+router.get('/listAllPolicy', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         console.log('req.query.page---', req.query.page);
         let page = req.query.page - 1;
@@ -187,7 +187,7 @@ router.get('/policy/:policyId', passport.authenticate('jwt', { session: false })
         })
 });
 
-router.put('/updateStatusPolicy', async function (req, res) {
+router.put('/updateStatusPolicy', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const policyId = req.body.id;
         const newStatus = req.body.status;
@@ -199,7 +199,7 @@ router.put('/updateStatusPolicy', async function (req, res) {
         res.status(400).json({ error: err });
     }
 });
-router.get('/listAllComplain', async function (req, res) {
+router.get('/listAllComplain', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         let page = req.query.page - 1;
         if (!req.query.page || parseInt(req.query.page) === 0) {
@@ -209,14 +209,14 @@ router.get('/listAllComplain', async function (req, res) {
         const offset = page * LIMIT;
         const listComplain = await complainModel.list(offset, LIMIT);
         const count = await complainModel.countTotalPage();
-        const totalPage = Math.ceil(count[0].total/LIMIT);
+        const totalPage = Math.ceil(count[0].total / LIMIT);
         res.status(200).json({ data: listComplain, totalPage });
     } catch (err) {
         res.status(400).json({ err: err });
     }
 });
 
-router.get('/getDetailComplain', async function (req, res) {
+router.get('/getDetailComplain', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         let idComplain = req.query.id;
         if (!idComplain) {
@@ -227,13 +227,13 @@ router.get('/getDetailComplain', async function (req, res) {
         const allMessage = await messageModel.getAllMessageById(policyData[0].id_student, policyData[0].id_teacher);
         complain[0].policyData = policyData;
         complain[0].allMessage = allMessage;
-        res.status(200).json({data: complain});
+        res.status(200).json({ data: complain });
     } catch (error) {
         res.status(400).json({ err: error });
     }
 })
 
-router.post('/solveComplain', async function (req, res) {
+router.post('/solveComplain', passport.authenticate('jwt', { session: false }), async function (req, res) {
     try {
         const complainId = req.body.id;
         const newStatus = req.body.newStatus;
