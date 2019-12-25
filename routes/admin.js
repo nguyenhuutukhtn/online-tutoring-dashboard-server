@@ -13,21 +13,21 @@ const LIMIT = 10;
 /* POST login. */
 router.post('/login', function (req, res) {
     passport.authenticate('user-local', { session: false }, (err, user, info) => {
-      if (err || !user) {
-        return res.status(400).json({
-          message: info.message,
-        });
-      }
-      req.login(user, { session: false }, (err) => {
-        if (err) {
-          res.send(err);
+        if (err || !user) {
+            return res.status(400).json({
+                message: info.message,
+            });
         }
-        //generate a signed son web token with the contents of user object and return it in the response
-        const token = jwt.sign({ name: user[0].name, userId: user[0].id, role: user[0].role }, 'your_jwt_secret');
-        return res.json({ name: user[0].name, userId: user[0].id, token });
-      });
+        req.login(user, { session: false }, (err) => {
+            if (err) {
+                res.send(err);
+            }
+            //generate a signed son web token with the contents of user object and return it in the response
+            const token = jwt.sign({ name: user[0].name, userId: user[0].id }, 'your_jwt_secret');
+            return res.json({ name: user[0].name, userId: user[0].id, token });
+        });
     })(req, res);
-  });
+});
 
 router.get('/listallUser', async function (req, res) {
     try {
@@ -38,7 +38,7 @@ router.get('/listallUser', async function (req, res) {
         const offset = page * LIMIT;
         const listUser = await userModel.list(offset, LIMIT);
         const count = await userModel.countTotalPage();
-        const totalPage = Math.ceil(count[0].total/LIMIT);
+        const totalPage = Math.ceil(count[0].total / LIMIT);
         res.status(200).json({ data: listUser, totalPage });
     } catch (err) {
         res.status(400).json({ error: err });
@@ -65,9 +65,9 @@ router.get('/listAllTag', async function (req, res) {
             page = 0;
         }
         const offset = page * LIMIT;
-        const listTag = await tagModel.list(offset,LIMIT);
+        const listTag = await tagModel.list(offset, LIMIT);
         const count = await tagModel.countTotalPage();
-        const totalPage = Math.ceil(count[0].total/LIMIT);
+        const totalPage = Math.ceil(count[0].total / LIMIT);
         res.status(200).json({ data: listTag, totalPage });
     } catch (err) {
         res.status(400).json({ error: err });
@@ -154,6 +154,36 @@ router.get('/listAllPolicy', async function (req, res) {
     } catch (err) {
         res.status(400).json({ err: err });
     }
+});
+
+router.get('/policy', passport.authenticate('jwt', { session: false }), function (req, res) {
+    const page = req.query.p || 1;
+
+    let limit = 9;
+    let offset = limit * (page - 1);
+    let listPolicy = policyModel.findPolicy(limit, offset);
+    let countPolicy = policyModel.countPolicy();
+    Promise.all([countPolicy, listPolicy])
+        .then(values => {
+            return res.status(200).json({ count: values[0][0].count, data: values[1] });
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err })
+        })
+});
+
+router.get('/policy/:policyId', passport.authenticate('jwt', { session: false }), function (req, res) {
+    let policyId = req.params.policyId;
+    policyModel.findPolicyByPolicyId(policyId)
+        .then(policy => {
+            if (policy.length === 0) {
+                return res.status(400).json({ message: "Policy invalid" })
+            }
+            return res.status(200).json({ data: policy[0] })
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err.toString() });
+        })
 });
 
 router.put('/updateStatusPolicy', async function (req, res) {
@@ -272,7 +302,7 @@ router.get('/getTopProfitByTutor', async function (req, res) {
 
 router.get('/getTopProfitBySkill', async function (req, res) {
     try {
-        const idSkill =  req.query.idSkill ? parseInt(req.query.idSkill) : '';
+        const idSkill = req.query.idSkill ? parseInt(req.query.idSkill) : '';
         console.log('idSkill------', idSkill);
         const listPolicy = await policyModel.getBySkill(idSkill);
         console.log('listPolicy---------', listPolicy);
