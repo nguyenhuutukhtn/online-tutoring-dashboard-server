@@ -18,4 +18,7 @@ module.exports = {
     countTotalPage: () => {
         return db.load(`select COUNT(*) as total from user`)
     },
+    getAllByRole: (role) => {
+        return db.load(`select count(*) as total from user where role='${role}'`)
+    }
 };

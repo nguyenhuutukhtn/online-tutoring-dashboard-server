@@ -203,7 +203,6 @@ router.get('/listAllComplain', passport.authenticate('jwt', { session: false }),
     try {
         let page = req.query.page - 1;
         if (!req.query.page || parseInt(req.query.page) === 0) {
-            console.log('hahahah');
             page = 0;
         }
         const offset = page * LIMIT;
@@ -279,14 +278,11 @@ router.get('/getAllProfit', passport.authenticate('jwt', { session: false }), as
         const totalByMonth = Array(13).fill(0);
         const totalByYear = Array(11).fill(0);
         listPolicy.forEach(element => {
-            console.log('element.complete_day-----', element.complete_date);
             if (!element.complete_date) {
                 return;
             }
             const dayFormat = moment(element.complete_date).format('DD/MM/YYYY');
-            console.log('dayFormat----', dayFormat);
             const dayArray = dayFormat.split('/');
-            console.log('dayArray--------', dayArray);
             totalByDay[parseInt(dayArray[0]) - 1] += element.price*1000;
             totalByMonth[parseInt(dayArray[1]) - 1] += element.price*1000;
             let year = parseInt(dayArray[2]);
@@ -312,7 +308,6 @@ router.get('/getTopProfitByTutor', passport.authenticate('jwt', { session: false
     try {
 
         const listPolicy = await policyModel.groupByTutor('complete');
-        console.log('listPolicy---------', listPolicy);
         // listPolicy.forEach(element => {
         //     console.log('element.complete_day-----', element.complete_date);
         //     if (!element.complete_date) {
@@ -342,14 +337,11 @@ router.get('/getTopProfitBySkill', async function (req, res) {
         const dayCompare = req.query.dayCompare;
         let total = 0;
         listPolicy.forEach(element => {
-            console.log('element.complete_day-----', element.complete_date);
             if (!element.complete_date) {
                 return;
             }
             const dayFormat = moment(element.complete_date).format('DD/MM/YYYY');
-            console.log('dayFormat----', dayFormat);
             const dayArray = dayFormat.split('/');
-            console.log('dayArray--------', dayArray);
 
             if (staticBy === 'day' && parseInt(dayCompare) === parseInt(dayArray[0])) {
                 total += element.price;
@@ -364,5 +356,13 @@ router.get('/getTopProfitBySkill', async function (req, res) {
         console.log('err-----', err);
         res.status(400).json({ error: err });
     }
+});
+
+router.get('/getAllInfo', async function(req, res, next) {
+    const totalStudent = await userModel.getAllByRole('student');
+    const totalTutor = await userModel.getAllByRole('tutor');
+    const totalPolicy = await policyModel.countPolicy();
+    const totalProfit = await policyModel.totalProfit();
+    return res.status(200).json({totalStudent, totalTutor, totalPolicy, totalProfit});
 });
 module.exports = router;
